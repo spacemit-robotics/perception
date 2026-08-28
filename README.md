@@ -1,8 +1,18 @@
 # Perception
 
-计算机视觉与感知算法库，包含图像拼接等模块。
+计算机视觉与感知算法库，包含图像拼接、AprilTag 检测等模块。
 
 ## 模块列表
+
+### [AprilTag](./thirdparty/apriltag/)
+
+第三方库 [AprilRobotics/apriltag](https://github.com/AprilRobotics/apriltag) 官方源码。编译与 API 说明见 [thirdparty/apriltag/README.md](./thirdparty/apriltag/README.md)。鱼眼标定中的用法见 [fisheye_image_stitching/README.md](./image_stitching/fisheye_image_stitching/README.md)。
+
+```bash
+cd thirdparty/apriltag
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
 
 ### [图像拼接 (Image Stitching)](./image_stitching/)
 
@@ -25,6 +35,9 @@
 每个模块都是独立的，按需选择：
 
 ```bash
+# AprilTag
+cd thirdparty/apriltag && cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build
+
 # 鱼眼拼接（四路相机环视）
 cd image_stitching/fisheye_image_stitching
 ./run_live_vi.sh
@@ -36,12 +49,14 @@ cd image_stitching/planar_image_stitching
 
 详细的编译、配置和使用说明见各模块的 README.md。
 
-
 ## 目录结构
 
 ```
 perception/
 ├── README.md                          # 本文档
+├── thirdparty/
+│   └── apriltag/                      # AprilTag 官方源码
+│       └── README.md                  # 官方文档
 └── image_stitching/                   # 图像拼接模块
     ├── README.md                      # 拼接模块总览
     ├── fisheye_image_stitching/       # 鱼眼环视拼接
@@ -49,3 +64,13 @@ perception/
     └── planar_image_stitching/        # 平面全景拼接
         └── README.md
 ```
+
+## 第三方依赖
+
+本仓库以下目录包含第三方开源代码，使用时请遵守对应许可证：
+
+| 目录 | 上游项目 | 版本 | 许可证 |
+|------|----------|------|--------|
+| `thirdparty/apriltag/` | [AprilRobotics/apriltag](https://github.com/AprilRobotics/apriltag) | v3.4.5+ | [BSD 2-Clause](./thirdparty/apriltag/LICENSE.md) |
+
+`thirdparty/apriltag/` 为官方源码 vendoring，核心库未修改。版权归 The Regents of The University of Michigan（2013–2016），详见 [thirdparty/apriltag/LICENSE.md](./thirdparty/apriltag/LICENSE.md)。

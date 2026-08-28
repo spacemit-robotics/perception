@@ -2,3 +2,4 @@
 *output/
 *out/
 *.shaders/
+build-*/
