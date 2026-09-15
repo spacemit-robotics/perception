@@ -6,6 +6,7 @@
 #include <opencv2/imgproc.hpp>
 
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <cstdint>
@@ -19,6 +20,13 @@ namespace {
 
 std::vector<float> PrepareInput(
     const cv::Mat& bgr, const spacemit::stereo::ModelInfo& info) {
+    // This LAS2 variant has ImageNet normalization outside the ONNX graph.
+    // OpenCV loads BGR; convert to RGB before writing the model tensor.
+    constexpr std::array<float, 3> kImageNetMean = {
+        0.485f, 0.456f, 0.406f};
+    constexpr std::array<float, 3> kImageNetStd = {
+        0.229f, 0.224f, 0.225f};
+
     cv::Mat resized;
     cv::resize(bgr, resized,
         cv::Size(info.input_width, info.input_height),
@@ -34,14 +42,23 @@ std::vector<float> PrepareInput(
         for (int x = 0; x < rgb.cols; ++x) {
             const std::size_t pixel =
                 static_cast<std::size_t>(y) * rgb.cols + x;
+            const float red =
+                (static_cast<float>(row[x][0]) / 255.0f - kImageNetMean[0]) /
+                kImageNetStd[0];
+            const float green =
+                (static_cast<float>(row[x][1]) / 255.0f - kImageNetMean[1]) /
+                kImageNetStd[1];
+            const float blue =
+                (static_cast<float>(row[x][2]) / 255.0f - kImageNetMean[2]) /
+                kImageNetStd[2];
             if (info.input_layout == spacemit::stereo::TensorLayout::nchw) {
-                input[pixel] = row[x][0];
-                input[plane + pixel] = row[x][1];
-                input[2 * plane + pixel] = row[x][2];
+                input[pixel] = red;
+                input[plane + pixel] = green;
+                input[2 * plane + pixel] = blue;
             } else {
-                input[3 * pixel] = row[x][0];
-                input[3 * pixel + 1] = row[x][1];
-                input[3 * pixel + 2] = row[x][2];
+                input[3 * pixel] = red;
+                input[3 * pixel + 1] = green;
+                input[3 * pixel + 2] = blue;
             }
         }
     }
