@@ -27,7 +27,10 @@ STEREO_RIGHT=/path/Motorcycle-perfect/im1.png \
 ```
 
 默认使用 `model/LAS2_M_288x384.fp16.onnx`，输入宽×高为
-`384×288`。默认配置是 8 个 A100 核和 4 个实例。可通过以下环境变量
+`384×288`。demo 会直接 resize 左右图、转换为 RGB，并在模型外按
+ImageNet 标准执行 `(RGB / 255 - mean) / std`，其中
+`mean=(0.485, 0.456, 0.406)`、`std=(0.229, 0.224, 0.225)`。
+默认配置是 8 个 A100 核和 4 个实例。可通过以下环境变量
 调整：
 
 - `STEREO_MODEL`
@@ -58,20 +61,15 @@ if (!matcher.initialize(config)) {
 -L<stereo_matching>/lib -lstereo_matching
 ```
 
-`model_info()` 返回模型输入尺寸和布局。`infer()` 接收 RGB float32
-输入，数值范围为 `0–255`。输入输出内存在 `infer()` 返回前必须保持
+`model_info()` 返回模型输入尺寸和布局。`infer()` 接收 ImageNet
+归一化后的 RGB float32 输入。输入输出内存在 `infer()` 返回前必须保持
 有效。
 
-## 板端实测
+## 板端验证
 
-K3，`384×288`，预热 10 次，纯推理：
-
-| 配置 | 并发 | 平均延迟 | 吞吐 |
-|---|---:|---:|---:|
-| 4 核 / 1 实例 | 1 | 50.04 ms | 19.98 FPS |
-| 8 核 / 4 实例 | 4 | 92.44 ms | 43.11 FPS |
-| 8 核 / 8 实例 | 8 | 160.03 ms | 49.70 FPS |
-
-8 核 / 8 实例连续 800 次：P50 `159.87 ms`，P99 `165.17 ms`。
+当前包使用 K3 yyx EP 和 `LAS2_M_288x384.fp16.onnx`。在 K3 板端以
+Middlebury Motorcycle 左右图完成了功能验证；demo 打印单次端到端推理
+调用耗时。性能取决于 A100 核数、实例数和输入并发，应在目标部署配置下
+预热后测量。
 
 OpenCV 仅用于 `demo/demo.cpp` 读取和保存图片。
