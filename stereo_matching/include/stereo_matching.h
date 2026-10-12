@@ -67,8 +67,10 @@ public:
     bool initialize(const Config& config);
 
     // Synchronous zero-copy handoff. left and right are float32 RGB tensors in
-    // the layout and capacity reported by model_info(); pixel values use the
-    // model's LAS2 convention (currently 0..255). disparity is float32.
+    // the layout and capacity reported by model_info(). The bundled LAS2 model
+    // expects ImageNet-normalized values: (RGB / 255 - mean) / std, with
+    // mean=(0.485, 0.456, 0.406) and std=(0.229, 0.224, 0.225).
+    // disparity is float32.
     // All three buffers are wrapped by ONNX Runtime directly and must remain
     // valid until this call returns.
     // Concurrent calls are distributed over available instances and block on
