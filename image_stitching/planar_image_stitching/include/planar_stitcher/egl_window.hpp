@@ -74,15 +74,29 @@ public:
     ImportedNv12Texture(const ImportedNv12Texture&) = delete;
     ImportedNv12Texture& operator = (const ImportedNv12Texture&) = delete;
 
+    // Chooses the hardware (DMA-BUF) or software (glTexImage2D) path from the
+    // frame itself; software frames carry their planes in cpu_y/cpu_uv.
     bool Import(EglWindow& window, const Nv12DmaFrame& frame,
                 std::string* error);
     void Reset() noexcept;
+    // Valid on the hardware path: the external (samplerExternalOES) texture.
     GLuint texture_id() const { return texture_; }
+    // Valid on the software path: separate Y and interleaved-UV textures.
+    GLuint y_texture() const { return y_texture_; }
+    GLuint uv_texture() const { return uv_texture_; }
+    bool is_cpu() const { return cpu_; }
 
 private:
+    bool ImportHardware(EglWindow& window, const Nv12DmaFrame& frame,
+                        std::string* error);
+    bool ImportCpu(const Nv12DmaFrame& frame, std::string* error);
+
     EglWindow* window_ = nullptr;
     EGLImageKHR image_ = EGL_NO_IMAGE_KHR;
     GLuint texture_ = 0;
+    GLuint y_texture_ = 0;
+    GLuint uv_texture_ = 0;
+    bool cpu_ = false;
 };
 
 }  // namespace planar_stitcher

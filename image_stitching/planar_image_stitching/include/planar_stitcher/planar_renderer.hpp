@@ -48,6 +48,7 @@ private:
     RegistrationResult registration_;
     std::vector<LevelResources> levels_;
     GLuint projection_program_ = 0;
+    GLuint projection_cpu_program_ = 0;
     GLuint horizontal_program_ = 0;
     GLuint downsample_program_ = 0;
     GLuint coarse_program_ = 0;

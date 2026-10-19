@@ -179,6 +179,22 @@ cd /path/to/planar_image_stitching
 - 手动强制：`runtime.force_offscreen=true`
 - 离屏模式下仍可通过 `output.image` 保存结果图片
 
+**无桌面登录时的解码回退**
+
+`/dev/video*` 的访问权限通常只授予当前占用 seat 的图形会话（例如 `sddm`）。通过 SSH 或在无桌面登录的情况下运行时，进程没有这些权限，MPP 的 VDEC 硬件解码会失败。
+
+此时程序自动回退到 CPU 解码（OpenCV 解码 JPEG 后上传纹理），渲染仍然走 GPU：
+
+```text
+[decoder] VDEC_EnableChn failed (-400); falling back to CPU JPEG decode
+```
+
+需要注意：
+
+- 回退只影响 `camera.enable=false` 的图片输入路径
+- 帧率会低于硬件解码路径（实测约 22 FPS，硬件路径约 31 FPS）
+- 如需硬件解码，请在有桌面登录的会话中运行，或将用户加入 `video` 组并调整设备 ACL
+
 ## 切换检测器
 
 检测器通过 `config.json` 切换，修改后直接运行即可（无需重新编译）：
